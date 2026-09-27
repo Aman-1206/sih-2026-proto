@@ -14,30 +14,30 @@ import { ContentDraft } from '../models/ContentDraft';
 import { Campaign } from '../models/Campaign';
 import { AuditLog, Notification } from '../models/AuditLog';
 
+async function safeUpsert(model: any, filterKey: string, docs: any[]): Promise<any[]> {
+  if (!docs || docs.length === 0) return [];
+  const ops = docs.map(doc => {
+    const docObj = { ...doc };
+    delete docObj._id;
+    return {
+      updateOne: {
+        filter: { [filterKey]: doc[filterKey] },
+        update: { $setOnInsert: docObj },
+        upsert: true
+      }
+    };
+  });
+  await model.bulkWrite(ops);
+  return model.find({ [filterKey]: { $in: docs.map(d => d[filterKey]) } });
+}
+
 export async function seedDatabase() {
   console.log('[ORUVIA SEED] Seeding scientific knowledge repository...');
-
-  // Clean collections
-  await Promise.all([
-    User.deleteMany({}),
-    Station.deleteMany({}),
-    Expedition.deleteMany({}),
-    Dataset.deleteMany({}),
-    Publication.deleteMany({}),
-    MediaAsset.deleteMany({}),
-    Activity.deleteMany({}),
-    Story.deleteMany({}),
-    LearnTopic.deleteMany({}),
-    ContentDraft.deleteMany({}),
-    Campaign.deleteMany({}),
-    AuditLog.deleteMany({}),
-    Notification.deleteMany({}),
-  ]);
 
   const defaultPasswordHash = await bcrypt.hash('oruvia2026', 10);
 
   // 1. Users & Demo Accounts
-  const users = await User.insertMany([
+  const users = await safeUpsert(User, 'email', [
     {
       name: 'Dr. Evelyn Vance',
       email: 'admin@oruvia.demo',
@@ -86,7 +86,7 @@ export async function seedDatabase() {
   ]);
 
   // 2. Stations (4 Stations)
-  const stations = await Station.insertMany([
+  const stations = await safeUpsert(Station, 'slug', [
     {
       slug: 'bharati-station',
       name: 'Bharati Research Station',
@@ -208,7 +208,7 @@ export async function seedDatabase() {
   ]);
 
   // 3. Expeditions (8 Expeditions)
-  const expeditions = await Expedition.insertMany([
+  const expeditions = await safeUpsert(Expedition, 'slug', [
     {
       slug: 'expedition-antarctic-43',
       number: 'ISEA-43',
@@ -395,7 +395,7 @@ export async function seedDatabase() {
   ]);
 
   // 4. Datasets (15 Datasets)
-  const datasets = await Dataset.insertMany([
+  const datasets = await safeUpsert(Dataset, 'slug', [
     {
       slug: 'larsemann-hills-boundary-met-2024',
       title: 'High-Resolution Surface Boundary Layer Meteorology: Bharati Station, East Antarctica',
@@ -879,7 +879,7 @@ export async function seedDatabase() {
   ]);
 
   // 5. Publications (18 Publications)
-  const publications = await Publication.insertMany([
+  const publications = await safeUpsert(Publication, 'slug', [
     {
       slug: 'vance-2024-atmospheric-boundary-antarctica',
       title: 'Decadal Evolution of Coastal Boundary Layer Inversions and Turbulent Fluxes in East Antarctica',
@@ -1260,10 +1260,10 @@ export async function seedDatabase() {
       isDemoRecord: true,
     });
   }
-  const mediaAssets = await MediaAsset.insertMany(mediaItems);
+  const mediaAssets = await safeUpsert(MediaAsset, 'slug', mediaItems);
 
   // 7. Institutional Activities (12 Activities)
-  const activities = await Activity.insertMany([
+  const activities = await safeUpsert(Activity, 'slug', [
     {
       slug: 'international-polar-symposium-2024',
       title: 'Annual Symposium on Cryospheric Dynamics and Sea-Level Projections',
@@ -1442,7 +1442,7 @@ export async function seedDatabase() {
   ]);
 
   // 8. Editorial Stories (6 Stories with multi-reading levels)
-  const stories = await Story.insertMany([
+  const stories = await safeUpsert(Story, 'slug', [
     {
       slug: 'voices-of-the-polar-ice',
       title: 'Voices of the Polar Ice: How 1,800 Years of Climate Memory Are Read from Cold Cylinders',
@@ -1579,7 +1579,7 @@ export async function seedDatabase() {
   ]);
 
   // 9. Learning Topics (with interactive quizzes and explainers)
-  await LearnTopic.insertMany([
+  await safeUpsert(LearnTopic, 'slug', [
     {
       slug: 'polar-regions-101',
       title: 'Polar Regions: Antarctica vs Arctic Fundamentals',
@@ -1679,7 +1679,7 @@ export async function seedDatabase() {
   ]);
 
   // 10. Campaigns (3 Campaigns)
-  const campaigns = await Campaign.insertMany([
+  const campaigns = await safeUpsert(Campaign, 'slug', [
     {
       slug: 'polar-science-week-2025',
       name: 'Global Polar Science & Climate Awareness Campaign',
@@ -1725,7 +1725,7 @@ export async function seedDatabase() {
   ]);
 
   // 11. Content Drafts (8 Drafts with Evidence Lock sentences)
-  const drafts = await ContentDraft.insertMany([
+  const drafts = await safeUpsert(ContentDraft, 'title', [
     {
       title: 'Expedition Insights: Decoding 1,800 Years of Antarctic Ice',
       platform: 'instagram',
@@ -2002,7 +2002,7 @@ export async function seedDatabase() {
   ]);
 
   // 12. Audit Logs & Notifications
-  await AuditLog.insertMany([
+  await safeUpsert(AuditLog, 'event', [
     {
       actorId: users[0]._id.toString(),
       actorName: users[0].name,
@@ -2025,7 +2025,7 @@ export async function seedDatabase() {
     },
   ]);
 
-  await Notification.insertMany([
+  await safeUpsert(Notification, 'title', [
     {
       userId: users[1]._id.toString(),
       title: 'Draft Approved',

@@ -10,7 +10,6 @@ import { connectDB } from './config/db';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { seedDatabase } from './scripts/seed';
-import { Dataset } from './models/Dataset';
 
 const app = express();
 
@@ -65,12 +64,8 @@ async function startServer() {
   try {
     await connectDB();
 
-    // Check if database needs initial seeding
-    const datasetCount = await Dataset.countDocuments();
-    if (datasetCount === 0) {
-      console.log('[ORUVIA] Empty database detected. Auto-seeding initial scientific repository...');
-      await seedDatabase();
-    }
+    // Idempotently seed baseline records if needed
+    await seedDatabase();
 
     const server = app.listen(config.port, () => {
       console.log(`====================================================`);

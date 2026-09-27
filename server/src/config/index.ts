@@ -4,13 +4,17 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 export const config = {
   env: process.env.NODE_ENV || 'development',
+  isProduction,
   port: parseInt(process.env.PORT || '5000', 10),
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   mongodb: {
-    uri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/oruvia',
-    useMemoryServerIfFailed: true,
+    uri: process.env.MONGODB_URI || (isProduction ? '' : 'mongodb://127.0.0.1:27017/oruvia'),
+    dbName: process.env.MONGODB_DB_NAME || 'oruvia',
+    useMemoryServerIfFailed: !isProduction,
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'oruvia_super_secure_jwt_secret_dev_2026_earth_systems',
@@ -19,7 +23,7 @@ export const config = {
     refreshExpiresIn: '7d',
   },
   ai: {
-    provider: process.env.AI_PROVIDER || 'mock', // 'mock' | 'openai' | 'gemini'
+    provider: process.env.AI_PROVIDER || 'mock',
     apiKey: process.env.AI_API_KEY || '',
     model: process.env.AI_MODEL || 'oruvia-earth-rag-v1',
   },
