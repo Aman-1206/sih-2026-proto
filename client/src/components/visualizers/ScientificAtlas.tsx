@@ -46,7 +46,7 @@ const REGION_PRESETS = [
 ];
 
 // Read CARTO API key from Vite env — set VITE_CARTO_API_KEY in your .env file
-const CARTO_API_KEY = import.meta.env.VITE_CARTO_API_KEY as string | undefined;
+const CARTO_API_KEY = (import.meta as any).env?.VITE_CARTO_API_KEY as string | undefined;
 
 function buildCartoStyle(apiKey: string): maplibregl.StyleSpecification {
   return {
