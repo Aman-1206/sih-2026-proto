@@ -19,7 +19,8 @@ import {
   ToneType,
 } from '@oruvia/shared';
 
-const API_BASE = '/api';
+const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '';
+const API_BASE = `${BASE_URL.replace(/\/$/, '')}/api`;
 
 async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('oruvia_token');

@@ -48,7 +48,7 @@ const REGION_PRESETS = [
 // Read CARTO API key from Vite env — set VITE_CARTO_API_KEY in your .env file
 const CARTO_API_KEY = (import.meta as any).env?.VITE_CARTO_API_KEY as string | undefined;
 
-function buildCartoStyle(apiKey: string): maplibregl.StyleSpecification {
+function buildCartoStyle(): maplibregl.StyleSpecification {
   return {
     version: 8,
     glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
@@ -56,9 +56,10 @@ function buildCartoStyle(apiKey: string): maplibregl.StyleSpecification {
       'carto-dark': {
         type: 'raster',
         tiles: [
-          `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?api_key=${apiKey}`,
-          `https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?api_key=${apiKey}`,
-          `https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?api_key=${apiKey}`,
+          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
         ],
         tileSize: 256,
         attribution: '© <a href="https://carto.com">CARTO</a> © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
@@ -72,9 +73,6 @@ function buildCartoStyle(apiKey: string): maplibregl.StyleSpecification {
   };
 }
 
-// Fallback no-key style using OpenFreeMap (truly free, no key needed)
-const FREE_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
-
 export const ScientificAtlas: React.FC<ScientificAtlasProps> = ({
   layersData,
   height = '680px',
@@ -84,7 +82,6 @@ export const ScientificAtlas: React.FC<ScientificAtlasProps> = ({
   const markersRef = useRef<maplibregl.Marker[]>([]);
 
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [noKey, setNoKey] = useState(!CARTO_API_KEY);
   const [activeLayers, setActiveLayers] = useState({ stations: true, datasets: true, expeditions: true });
   const [selectedYear, setSelectedYear] = useState(2026);
   const [selectedFeature, setSelectedFeature] = useState<any | null>(null);
@@ -97,13 +94,9 @@ export const ScientificAtlas: React.FC<ScientificAtlasProps> = ({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    const style = CARTO_API_KEY
-      ? buildCartoStyle(CARTO_API_KEY)
-      : FREE_STYLE_URL;
-
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style,
+      style: buildCartoStyle(),
       center: [20, 10],
       zoom: 1.4,
       attributionControl: false,
@@ -112,9 +105,13 @@ export const ScientificAtlas: React.FC<ScientificAtlasProps> = ({
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-right');
     map.on('load', () => setMapLoaded(true));
+    map.on('error', () => setMapLoaded(true));
+
+    const loadTimer = setTimeout(() => setMapLoaded(true), 2000);
 
     mapRef.current = map;
     return () => {
+      clearTimeout(loadTimer);
       markersRef.current.forEach(m => m.remove());
       map.remove();
       mapRef.current = null;
@@ -212,16 +209,8 @@ export const ScientificAtlas: React.FC<ScientificAtlasProps> = ({
 
       <div className="relative w-full border border-[#747A75]/30 rounded-2xl bg-[#0D1211] overflow-hidden text-[#F4F2EC] shadow-2xl" style={{ height }}>
 
-        {/* No-key warning banner */}
-        {noKey && (
-          <div className="absolute top-0 left-0 right-0 z-50 bg-[#E5A93C]/15 border-b border-[#E5A93C]/30 px-4 py-2 text-xs font-mono text-[#E5A93C] flex items-center justify-between">
-            <span>⚠ No CARTO API key — using OpenFreeMap fallback. Add <code className="bg-[#0D1211]/50 px-1 rounded">VITE_CARTO_API_KEY</code> to <code className="bg-[#0D1211]/50 px-1 rounded">.env</code> for the premium dark basemap.</span>
-            <button onClick={() => setNoKey(false)} className="ml-2 text-[#E5A93C]/60 hover:text-[#E5A93C]">✕</button>
-          </div>
-        )}
-
         {/* MapLibre canvas */}
-        <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-10" style={{ top: noKey ? '36px' : 0 }} />
+        <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-10" />
 
         {/* Loading spinner */}
         {!mapLoaded && (
@@ -232,7 +221,7 @@ export const ScientificAtlas: React.FC<ScientificAtlasProps> = ({
         )}
 
         {/* Top Controls */}
-        <div className="absolute left-0 w-full p-3 z-30 flex flex-wrap items-start gap-2 bg-gradient-to-b from-[#0D1211]/90 via-[#0D1211]/50 to-transparent pointer-events-none" style={{ top: noKey ? '36px' : 0 }}>
+        <div className="absolute top-0 left-0 w-full p-3 z-30 flex flex-wrap items-start gap-2 bg-gradient-to-b from-[#0D1211]/90 via-[#0D1211]/50 to-transparent pointer-events-none">
           <div className="pointer-events-auto flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-mono uppercase tracking-widest text-[#B7FF5A] bg-[#0D1211]/90 px-2.5 py-1 rounded-md border border-[#B7FF5A]/40">
               MapLibre Scientific Atlas
