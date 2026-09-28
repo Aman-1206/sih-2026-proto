@@ -49,6 +49,7 @@ const REGION_PRESETS = [
 const CARTO_API_KEY = (import.meta as any).env?.VITE_CARTO_API_KEY as string | undefined;
 
 function buildCartoStyle(): maplibregl.StyleSpecification {
+  const apiKeyParam = CARTO_API_KEY ? `?api_key=${CARTO_API_KEY}` : '';
   return {
     version: 8,
     glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
@@ -56,10 +57,10 @@ function buildCartoStyle(): maplibregl.StyleSpecification {
       'carto-dark': {
         type: 'raster',
         tiles: [
-          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-          'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-          'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-          'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          `https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://b.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://c.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://d.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
         ],
         tileSize: 256,
         attribution: '© <a href="https://carto.com">CARTO</a> © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',

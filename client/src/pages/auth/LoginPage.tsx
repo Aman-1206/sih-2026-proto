@@ -15,7 +15,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const data = await api.post('/auth/login', form);
+      const data = await api.auth.login(form);
       setUser(data.user, data.token);
       navigate('/');
     } catch (err: any) {
@@ -129,11 +129,32 @@ export default function LoginPage() {
 
           {/* Demo credentials */}
           <div className="mt-8 p-4 bg-white/5 border border-white/10 rounded-xl">
-            <p className="text-xs font-mono text-[#747A75] uppercase tracking-wider mb-2">Demo Credentials</p>
-            <div className="space-y-1 text-xs text-[#747A75]">
-              <div><span className="text-white">Admin:</span> admin@oruvia.demo / oruvia2026</div>
-              <div><span className="text-white">Editor:</span> editor@oruvia.demo / oruvia2026</div>
-              <div><span className="text-white">Reviewer:</span> reviewer@oruvia.demo / oruvia2026</div>
+            <p className="text-xs font-mono text-[#747A75] uppercase tracking-wider mb-2">Click to Quick-Fill Credentials</p>
+            <div className="space-y-1.5 text-xs text-[#747A75]">
+              <button
+                type="button"
+                onClick={() => setForm({ email: 'admin@oruvia.demo', password: 'oruvia2026' })}
+                className="w-full text-left p-1.5 rounded hover:bg-white/5 transition-colors flex items-center justify-between group"
+              >
+                <div><span className="text-white font-medium group-hover:text-[#B7FF5A]">Admin:</span> admin@oruvia.demo</div>
+                <span className="font-mono text-[10px] text-[#747A75]">oruvia2026</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ email: 'editor@oruvia.demo', password: 'oruvia2026' })}
+                className="w-full text-left p-1.5 rounded hover:bg-white/5 transition-colors flex items-center justify-between group"
+              >
+                <div><span className="text-white font-medium group-hover:text-[#B7FF5A]">Editor:</span> editor@oruvia.demo</div>
+                <span className="font-mono text-[10px] text-[#747A75]">oruvia2026</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ email: 'reviewer@oruvia.demo', password: 'oruvia2026' })}
+                className="w-full text-left p-1.5 rounded hover:bg-white/5 transition-colors flex items-center justify-between group"
+              >
+                <div><span className="text-white font-medium group-hover:text-[#B7FF5A]">Reviewer:</span> reviewer@oruvia.demo</div>
+                <span className="font-mono text-[10px] text-[#747A75]">oruvia2026</span>
+              </button>
             </div>
           </div>
         </div>
