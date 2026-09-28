@@ -57,10 +57,11 @@ function buildCartoStyle(): maplibregl.StyleSpecification {
       'carto-dark': {
         type: 'raster',
         tiles: [
-          `https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
-          `https://b.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
-          `https://c.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
-          `https://d.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://cartodb-basemaps-b.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://cartodb-basemaps-c.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://cartodb-basemaps-d.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png${apiKeyParam}`,
+          `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
         ],
         tileSize: 256,
         attribution: '© <a href="https://carto.com">CARTO</a> © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',

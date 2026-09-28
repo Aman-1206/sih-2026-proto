@@ -19,8 +19,17 @@ import {
   ToneType,
 } from '@oruvia/shared';
 
-const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '';
-const API_BASE = `${BASE_URL.replace(/\/$/, '')}/api`;
+const getApiBase = (): string => {
+  const envUrl = (import.meta as any).env?.VITE_API_BASE_URL;
+  if (envUrl) {
+    return `${envUrl.replace(/\/$/, '')}/api`;
+  }
+  const customUrl = localStorage.getItem('oruvia_api_url') || (window as any).__ORUVIA_API_URL__;
+  if (customUrl) {
+    return `${customUrl.replace(/\/$/, '')}/api`;
+  }
+  return '/api';
+};
 
 async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('oruvia_token');
@@ -34,17 +43,29 @@ async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`${API_BASE}${url}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
+  const targetUrl = `${getApiBase()}${url}`;
+
+  let response: Response;
+  try {
+    response = await fetch(targetUrl, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+  } catch (netErr: any) {
+    throw new Error(`Unable to connect to backend server at ${targetUrl}. Please verify network connection or server status.`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('text/html')) {
+    throw new Error('API server returned HTML instead of JSON. Ensure VITE_API_BASE_URL is set to your active backend deployment URL.');
+  }
 
   if (!response.ok) {
     let errorMsg = 'An unexpected error occurred.';
     try {
       const errJson = await response.json();
-      errorMsg = errJson.error || errorMsg;
+      errorMsg = errJson.error || errJson.message || errorMsg;
     } catch {
       errorMsg = response.statusText || errorMsg;
     }
